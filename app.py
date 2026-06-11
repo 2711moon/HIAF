@@ -4,6 +4,7 @@ from extensions import csrf, assets
 from config import Config
 from routes import register_routes
 from utils import format_date_ddmmyyyy
+from models import ensure_admin_exists
 
 csrf = CSRFProtect()
 
@@ -11,6 +12,8 @@ def create_app():
     app = Flask(__name__)
     app.jinja_env.filters['datetime_format'] = format_date_ddmmyyyy
     app.config.from_object(Config)
+
+    ensure_admin_exists()
 
     # Initialize extensions
     csrf.init_app(app)
