@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from extensions import csrf, assets
@@ -5,7 +8,6 @@ from config import Config
 from routes import register_routes
 from utils import format_date_ddmmyyyy
 from models import ensure_admin_exists
-
 csrf = CSRFProtect()
 
 def create_app():

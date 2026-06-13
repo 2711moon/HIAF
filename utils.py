@@ -2,7 +2,7 @@ from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from bson.objectid import ObjectId
 from bson import ObjectId, errors as bson_errors
-from extensions import employees_collection
+from models import employees_collection
 
 def calc_age(dob_str):
     try:

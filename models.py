@@ -2,8 +2,10 @@ import os
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash
 
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient(os.getenv("MONGO_URI"))
+
 db = client['employee_management']
+
 employees_collection = db['employees']
 
 def ensure_admin_exists():
@@ -13,6 +15,8 @@ def ensure_admin_exists():
             'name': 'admin',
             'phone': '0000000000',
             'role': 'admin',
-            'password': generate_password_hash(os.getenv('ADMIN_PASSWORD', 'admin123')),
+            'password': generate_password_hash(
+                os.getenv('ADMIN_PASSWORD', 'admin123')
+            ),
             'details_completed': True
         })

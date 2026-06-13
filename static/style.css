@@ -258,7 +258,7 @@ select.form-select option:first-child {
   line-height: 1;
 }
 .auth-tabs .nav-link:hover {
-  background-color: #031939;
+  background-color: rgb(2.8, 24.5, 56.7);
   color: white;
 }
 .auth-tabs .nav-link.active {
