@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId  
 from models import employees_collection
@@ -138,3 +138,13 @@ def logout():
 
     flash('You have been logged out.', 'info')
     return redirect(url_for('auth.dashboard'))
+
+@auth_bp.route('/api/check_admin')
+def check_admin():
+    phone = request.args.get('phone')
+    if not phone or len(phone) != 10:
+        return jsonify({'isAdmin': False})
+    user = employees_collection.find_one({'phone': phone})
+    if user and user.get('role') == 'admin':
+        return jsonify({'isAdmin': True})
+    return jsonify({'isAdmin': False})

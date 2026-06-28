@@ -36,7 +36,15 @@ def export_handler():
     query = {'role': {'$ne': 'admin'}}
 
     if selected_ids and selected_ids != ['']:
-        query['employee_id'] = {'$in': selected_ids}
+        from bson.objectid import ObjectId
+        object_ids = []
+        for eid in selected_ids:
+            if eid:
+                try:
+                    object_ids.append(ObjectId(eid))
+                except:
+                    pass
+        query['_id'] = {'$in': object_ids}
     elif search:
         exact_fields = ['employee_id', 'phone', 'gender']
         partial_fields = ['name', 'designation', 'email']

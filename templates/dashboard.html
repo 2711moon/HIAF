@@ -294,7 +294,8 @@
 
           <div class="mb-3">
             <label class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" autocomplete="new-password" required>
+            <input type="password" name="password" id="registerPassword" class="form-control" value="123" readonly>
+            <small class="text-muted mt-1 d-block" id="registerPasswordNote"><i class="bi bi-info-circle"></i> Your password is by default 123.</small>
           </div>
 
           <button class="btn btn-primary w-100">Register</button>
@@ -315,9 +316,10 @@
           <div class="mb-3">
             <label class="form-label">Password</label>
             <div class="input-eye-wrapper">
-              <input type="password" class="form-control pe-5" id="passcode" name="passcode" required autocomplete="new-password" style="padding-right: 2.5rem;">
+              <input type="password" class="form-control pe-5" id="passcode" name="passcode" value="123" readonly style="padding-right: 2.5rem;">
               <i class="bi bi-eye" id="customEyeIcon" onmousedown="showPassword()" onmouseup="hidePassword()" onmouseleave="hidePassword()" title="Hold to show password"></i>
             </div>
+            <small class="text-muted mt-1 d-block" id="loginPasswordNote"><i class="bi bi-info-circle"></i> Your password is by default 123.</small>
           </div>
 
 
@@ -408,7 +410,35 @@
     icon.classList.remove('bi-eye-slash');
     icon.classList.add('bi-eye');
   }
-//remove me--|
+
+  const loginIdentifier = document.getElementById('loginIdentifier');
+  const passcode = document.getElementById('passcode');
+  const loginPasswordNote = document.getElementById('loginPasswordNote');
+
+  if (loginIdentifier && passcode) {
+    loginIdentifier.addEventListener('input', async function() {
+      const phone = this.value;
+      if (phone.length === 10) {
+        try {
+          const res = await fetch(`/api/check_admin?phone=${phone}`);
+          const data = await res.json();
+          if (data.isAdmin) {
+            passcode.readOnly = false;
+            passcode.value = '';
+            loginPasswordNote.style.display = 'none';
+            return;
+          }
+        } catch (err) {
+          console.error('Error checking admin status', err);
+        }
+      }
+      // Default for non-admins or incomplete phone numbers
+      passcode.readOnly = true;
+      passcode.value = '123';
+      loginPasswordNote.style.display = 'block';
+    });
+  }
+
   function toggleVideoFrame() {
     const overlay = document.getElementById('videoOverlay');
     const icon = document.querySelector('.video-icon');

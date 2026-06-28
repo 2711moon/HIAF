@@ -96,13 +96,21 @@ def delete_selected():
         flash("No employees selected.", "warning")
         return redirect(url_for('admin.admin_dashboard'))
 
-    filtered_ids = [eid for eid in selected_ids if eid != 'admin']
+    from bson.objectid import ObjectId
+    filtered_ids = []
+    for eid in selected_ids:
+        if eid and eid != 'admin':
+            try:
+                filtered_ids.append(ObjectId(eid))
+            except:
+                pass
+
     if not filtered_ids:
         flash("No valid employees selected.", "warning")
         return redirect(url_for('admin.admin_dashboard'))
 
     result = employees_collection.delete_many({
-        'employee_id': {'$in': filtered_ids},
+        '_id': {'$in': filtered_ids},
         'role': {'$ne': 'admin'}
     })
     flash(f"{result.deleted_count} employee(s) deleted.", "success")
