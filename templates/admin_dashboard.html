@@ -5,6 +5,9 @@
 
 {% block content %}
 <style>
+  .incomplete-row > td {
+    background-color: rgba(255, 182, 193, 0.299) !important;
+  }
   @media (max-width: 768px) {
     .dashboard-wrapper {
       padding-left: 0.5rem !important;
@@ -99,7 +102,7 @@
         </thead>
         <tbody>
           {% for employee in employees %}
-          <tr>
+          <tr {% if not employee.get('details_completed', False) %}class="incomplete-row"{% endif %}>
             <td>
               {% if employee.employee_id and employee.employee_id != 'admin' %}
               <input type="checkbox" name="selected_ids[]" value="{{ employee.employee_id }}" class="form-check-input select-checkbox" onchange="updateSelection()">
@@ -115,18 +118,17 @@
             <td>{{ employee.email }}</td>
             <td><div class="d-flex justify-content-center flex-wrap gap-1">
 
-                  {% if employee.employee_id %}
+                  {% set emp_id_param = employee.employee_id or employee._id %}
                   <a href="{{ url_for('main.employee_detail',
-                          employee_id=employee.employee_id) }}"
+                          employee_id=emp_id_param) }}"
                     class="btn btn-view btn-sm">
                       View
                   </a>
-                  {% endif %}
 
-                  {% if employee.employee_id and employee.employee_id != 'admin' %}
+                  {% if employee.employee_id != 'admin' %}
                   <form method="POST"
                         action="{{ url_for('admin.delete_employee',
-                                employee_id=employee.employee_id) }}"
+                                employee_id=emp_id_param) }}"
                         style="display:inline;">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <button type="submit"
@@ -150,6 +152,9 @@
       <div>
         <button type="submit" id="bulkDeleteBtn" class="btn btn-delete" disabled>Delete Selected</button>
         <span id="selectedCount" class="ms-2 text-muted">0 selected</span>
+      </div>
+      <div>
+        <span class="text-muted fw-bold me-2">Total Entries: {{ employees|length }}</span>
       </div>
     </div>
   </form>

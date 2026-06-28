@@ -222,7 +222,16 @@ def employee_detail(employee_id=None):
 
     # Admin can view any profile by ID
     if role == 'admin' and employee_id:
-        employee = employees_collection.find_one({'employee_id': employee_id})
+        from bson.errors import InvalidId
+        employee = None
+        try:
+            employee = employees_collection.find_one({'_id': ObjectId(employee_id)})
+        except InvalidId:
+            pass
+            
+        if not employee:
+            employee = employees_collection.find_one({'employee_id': employee_id})
+            
         if not employee:
             flash('Employee not found.', 'danger')
             return redirect(url_for('admin.admin_dashboard'))

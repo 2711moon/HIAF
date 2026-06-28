@@ -41,6 +41,9 @@ def admin_dashboard():
                 field: {'$regex': f'{re.escape(search)}', '$options': 'i'}
             })
 
+        if search.lower() == 'incomplete':
+            conditions.append({'details_completed': {'$ne': True}})
+
         query['$or'] = conditions
 
     employees = list(employees_collection.find(query))
@@ -56,9 +59,27 @@ def delete_employee(employee_id):
         flash('Cannot delete the admin account.', 'danger')
         return redirect(url_for('admin.admin_dashboard'))
 
-    result = employees_collection.delete_one({'employee_id': employee_id, 'role': {'$ne': 'admin'}})
+    from bson.errors import InvalidId
+    
+    emp_to_delete = None
+    try:
+        emp_to_delete = employees_collection.find_one({'_id': ObjectId(employee_id), 'role': {'$ne': 'admin'}})
+    except InvalidId:
+        pass
+        
+    if not emp_to_delete:
+        emp_to_delete = employees_collection.find_one({'employee_id': employee_id, 'role': {'$ne': 'admin'}})
+
+    if not emp_to_delete:
+        flash("Employee not found or cannot be deleted.", "danger")
+        return redirect(url_for('admin.admin_dashboard'))
+
+    result = employees_collection.delete_one({'_id': emp_to_delete['_id']})
+
     if result.deleted_count:
-        flash(f"Employee {employee_id} deleted.", "success")
+        emp_name = emp_to_delete.get('name', 'Unknown')
+        emp_code = emp_to_delete.get('employee_id', 'None')
+        flash(f"Employee ID {emp_code}, name {emp_name}, has been deleted.", "success")
     else:
         flash("Employee not found or cannot be deleted.", "danger")
 
