@@ -251,5 +251,84 @@ def employee_detail(employee_id=None):
 
     return render_template("employee_detail.html", employee=normalize_family(employee))
 
+@main_bp.route('/api/save_draft', methods=['POST'])
+def save_draft():
+    if session.get('role') != 'user':
+        return {'success': False, 'message': 'Unauthorized'}, 403
+        
+    emp_id = session.get('mongo_id')
+    employee = employees_collection.find_one({'_id': ObjectId(emp_id)})
+    if not employee:
+        return {'success': False, 'message': 'Not found'}, 404
+        
+    if employee.get('details_completed', False):
+        return {'success': False, 'message': 'Already completed'}, 400
 
+    form_data = request.form.to_dict()
+    form_data['family_members'] = []
+    
+    marital_status = form_data.get('marital_status')
+    if marital_status == 'married':
+        spouse_name = form_data.pop('spouse_name', '').strip()
+        spouse_dob = form_data.pop('spouse_dob', '')
+        spouse_gender = form_data.pop('spouse_gender', '')
+        spouse_age = calc_age(spouse_dob) if spouse_dob else ''
+        if spouse_name or spouse_dob or spouse_gender:
+            form_data['family_members'].append({
+                'relationship': 'Spouse',
+                'name': spouse_name,
+                'date_of_birth': spouse_dob,               
+                'gender': spouse_gender,
+                'age': spouse_age
+            })
+    else:
+        for key in ['spouse_name', 'spouse_dob', 'spouse_gender', 'spouse_age']:
+            form_data.pop(key, None)
 
+    try:
+        total_children = int(request.form.get('total_children', 0))
+    except ValueError:
+        total_children = 0
+
+    if marital_status in ['married', 'divorced/widowed']:
+        for i in range(total_children):
+            name = request.form.get(f'child_name_{i}', '').strip()
+            dob = request.form.get(f'child_dob_{i}', '')
+            phone_c = request.form.get(f'child_phone_{i}', '').strip()
+            gender = request.form.get(f'child_gender_{i}', '')
+            age = calc_age(dob) if dob else ''
+            
+            if name or dob or gender:
+                form_data['family_members'].append({
+                    'relationship': 'Child',
+                    'name': name,
+                    'date_of_birth': dob,
+                    'phone': phone_c,
+                    'gender': gender,
+                    'age': age
+                })
+
+    try:
+        total_parents = int(request.form.get('total_parents', 0))
+    except ValueError:
+        total_parents = 0
+        
+    for i in range(total_parents):
+        rel = request.form.get(f'parent_relationship_{i}', '')
+        name = request.form.get(f'parent_name_{i}', '').strip()
+        dob = request.form.get(f'parent_dob_{i}', '')
+        age = request.form.get(f'parent_age_{i}', '') or (calc_age(dob) if dob else '')
+        
+        if rel or name:
+            form_data['family_members'].append({
+                'relationship': rel,
+                'name': name,
+                'date_of_birth': dob,
+                'age': age
+            })
+
+    form_data.pop('details_completed', None)
+    form_data.pop('csrf_token', None)
+
+    employees_collection.update_one({'_id': employee['_id']}, {'$set': form_data})
+    return {'success': True}

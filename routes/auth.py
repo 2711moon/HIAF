@@ -100,46 +100,31 @@ def login():
 
     identifier = request.form.get('identifier')
     password = request.form.get('passcode')
-    role = request.form.get('role')
 
-    if role == 'admin':
-        admin = employees_collection.find_one({'role': 'admin'})
-        if admin and check_password_hash(admin['password'], password):
+    if not identifier or not identifier.isdigit() or len(identifier) != 10:
+        flash('Mobile number must be exactly 10 digits.', 'danger')
+        return redirect(url_for('auth.dashboard', show_login=1))
+
+    user = employees_collection.find_one({'phone': identifier})
+    
+    if user and check_password_hash(user.get('password', ''), password):
+        if user.get('role') == 'admin':
             session['role'] = 'admin'
             flash('Admin login successful.', 'success')
-            #return redirect(url_for('auth.dashboard'))
             return redirect(url_for('admin.admin_dashboard'))
         else:
-            flash('Invalid admin credentials.', 'danger')
-            return redirect(url_for('auth.dashboard', show_login=1))
-
-
-    elif role == 'user':
-        if not identifier or not identifier.isdigit() or len(identifier) != 10:
-            flash('Mobile number must be exactly 10 digits.', 'danger')
-            return redirect(url_for('auth.dashboard', show_login=1))
-
-        employee = employees_collection.find_one({'phone': identifier})
-        if employee and check_password_hash(employee.get('password', ''), password):
             session['role'] = 'user'
-            session['mongo_id'] = str(employee['_id'])
-            session['employee_id'] = employee.get('employee_id', '')
-            session['user_phone'] = employee['phone']
-            # Preserve the 'details_completed' flag from the database
-            #session['details_completed'] = employee.get('details_completed', False)
+            session['mongo_id'] = str(user['_id'])
+            session['employee_id'] = user.get('employee_id', '')
+            session['user_phone'] = user['phone']
             
-            if not employee.get('details_completed'):
+            if not user.get('details_completed'):
                 return redirect(url_for('main.complete_profile'))
             flash('Login successful.', 'success')
             return redirect(url_for('main.employee_detail'))
-        else:
-            flash('Invalid user credentials.', 'danger')
-            return redirect(url_for('auth.dashboard', show_login=1))
-
     else:
-        flash('Invalid role selected.', 'danger')
+        flash('Invalid credentials.', 'danger')
         return redirect(url_for('auth.dashboard', show_login=1))
-
 @auth_bp.route('/logout')
 def logout():
     # Clearing only sensitive session data related to login 

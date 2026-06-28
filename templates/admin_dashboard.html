@@ -105,7 +105,7 @@
           <tr {% if not employee.get('details_completed', False) %}class="incomplete-row"{% endif %}>
             <td>
               {% if employee.employee_id and employee.employee_id != 'admin' %}
-              <input type="checkbox" name="selected_ids[]" value="{{ employee.employee_id }}" class="form-check-input select-checkbox" onchange="updateSelection()">
+              <input type="checkbox" name="selected_ids[]" value="{{ employee._id }}" class="form-check-input select-checkbox" onchange="updateSelection()">
               {% else %}
               <input type="checkbox" disabled>
               {% endif %}
@@ -118,7 +118,7 @@
             <td>{{ employee.email }}</td>
             <td><div class="d-flex justify-content-center flex-wrap gap-1">
 
-                  {% set emp_id_param = employee.employee_id or employee._id %}
+                  {% set emp_id_param = employee._id %}
                   <a href="{{ url_for('main.employee_detail',
                           employee_id=emp_id_param) }}"
                     class="btn btn-view btn-sm">

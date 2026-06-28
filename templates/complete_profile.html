@@ -1151,6 +1151,33 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   });
 
+  // Auto-save logic
+  let saveDraftTimeout;
+  const autoSaveDraft = () => {
+    if (formSubmitted || isReadonly) return;
+    clearTimeout(saveDraftTimeout);
+    saveDraftTimeout = setTimeout(() => {
+      const formData = new FormData(form);
+      fetch('/api/save_draft', {
+        method: 'POST',
+        body: formData
+      }).then(res => res.json())
+        .then(data => {
+          if(data.success) {
+            console.log('Draft auto-saved');
+          }
+        })
+        .catch(err => console.error('Auto-save failed:', err));
+    }, 2000);
+  };
+
+  form.addEventListener('input', () => {
+    if (!formSubmitted) autoSaveDraft();
+  });
+  form.addEventListener('change', () => {
+    if (!formSubmitted) autoSaveDraft();
+  });
+
   validateFormState(false);
 });
 </script>
