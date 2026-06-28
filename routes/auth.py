@@ -86,6 +86,7 @@ def register():
         'details_completed': False
     })
 
+    session.permanent = True
     session['mongo_id'] = str(result.inserted_id)
     session['role'] = 'user'
     flash('Registration successful.', 'success')
@@ -108,6 +109,7 @@ def login():
     user = employees_collection.find_one({'phone': identifier})
     
     if user and check_password_hash(user.get('password', ''), password):
+        session.permanent = True
         if user.get('role') == 'admin':
             session['role'] = 'admin'
             flash('Admin login successful.', 'success')
