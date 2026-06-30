@@ -240,6 +240,7 @@ select.form-select option:first-child {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
+  flex-wrap: nowrap;
   z-index: 2;
 }
 .auth-tabs .nav-item {
@@ -658,6 +659,10 @@ table tr:nth-child(even) {
   .auth-wrapper {
     max-width: 100%;
     width: 100%;
+  }
+  .auth-tabs .nav-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
   }
   .card-body {
     padding: 0.75rem !important;
