@@ -85,8 +85,9 @@
   <!-- Bulk Delete Form -->
   <form method="POST" action="{{ url_for('admin.delete_selected') }}" id="bulkDeleteForm">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  </form>
 
-    <div class="table-responsive">
+  <div class="table-responsive">
       <table class="table table-bordered table-hover align-middle text-center">
         <thead class="table-light">
           <tr>
@@ -105,7 +106,7 @@
           <tr {% if not employee.get('details_completed', False) %}class="incomplete-row"{% endif %}>
             <td>
               {% if employee.employee_id and employee.employee_id != 'admin' %}
-              <input type="checkbox" name="selected_ids[]" value="{{ employee._id }}" class="form-check-input select-checkbox" onchange="updateSelection()">
+              <input type="checkbox" name="selected_ids[]" value="{{ employee._id }}" class="form-check-input select-checkbox" onchange="updateSelection()" form="bulkDeleteForm">
               {% else %}
               <input type="checkbox" disabled>
               {% endif %}
@@ -150,14 +151,13 @@
     <!-- Bulk Delete Button -->
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
       <div>
-        <button type="submit" id="bulkDeleteBtn" class="btn btn-delete" disabled>Delete Selected</button>
+        <button type="submit" id="bulkDeleteBtn" class="btn btn-delete" disabled form="bulkDeleteForm">Delete Selected</button>
         <span id="selectedCount" class="ms-2 text-muted">0 selected</span>
       </div>
       <div>
         <span class="fw-bold me-2" style="color: rgba(33, 37, 41, 0.37);">Total Entries: {{ employees|length }}</span>
       </div>
     </div>
-  </form>
 
   <!-- Individual Delete Forms (Separate from Bulk Form) 
   {% for employee in employees %}
