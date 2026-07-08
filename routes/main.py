@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from bson import ObjectId
+from werkzeug.security import generate_password_hash, check_password_hash
 from models import employees_collection
 from datetime import date
 from utils import calc_age, normalize_family, _get_employee_by_session_id
@@ -55,6 +56,10 @@ def complete_profile(employee_id=None):
     show_submit = (not is_submitted) or is_admin
     show_logout = is_user and is_submitted
     show_admin_actions = is_admin and is_submitted
+
+    has_default_password = False
+    if is_user and check_password_hash(employee.get('password', ''), '123'):
+        has_default_password = True
 
     if request.method == 'POST':
         form_data = request.form.to_dict()
@@ -207,6 +212,7 @@ def complete_profile(employee_id=None):
         show_submit=show_submit,
         show_logout=show_logout,
         show_admin_actions=show_admin_actions,
+        has_default_password=has_default_password,
         current_date=date.today().isoformat()
     )
 
@@ -331,4 +337,33 @@ def save_draft():
     form_data.pop('csrf_token', None)
 
     employees_collection.update_one({'_id': employee['_id']}, {'$set': form_data})
+    return {'success': True}
+
+@main_bp.route('/api/change_password', methods=['POST'])
+def change_password():
+    if session.get('role') != 'user':
+        return {'success': False, 'message': 'Unauthorized'}, 403
+        
+    emp_id = session.get('mongo_id')
+    employee = employees_collection.find_one({'_id': ObjectId(emp_id)})
+    if not employee:
+        return {'success': False, 'message': 'Not found'}, 404
+
+    current_password = request.form.get('current_password', '')
+    new_password = request.form.get('new_password', '')
+    confirm_password = request.form.get('confirm_password', '')
+
+    if not current_password or not new_password or not confirm_password:
+        return {'success': False, 'message': 'All fields are required.'}, 400
+
+    if new_password != confirm_password:
+        return {'success': False, 'message': 'New password and confirmation do not match.'}, 400
+
+    if not check_password_hash(employee.get('password', ''), current_password):
+        return {'success': False, 'message': 'Current password is incorrect.'}, 400
+
+    employees_collection.update_one(
+        {'_id': employee['_id']},
+        {'$set': {'password': generate_password_hash(new_password)}}
+    )
     return {'success': True}

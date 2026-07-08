@@ -139,12 +139,14 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('auth.dashboard'))
 
-@auth_bp.route('/api/check_admin')
-def check_admin():
+@auth_bp.route('/api/check_user_status')
+def check_user_status():
     phone = request.args.get('phone')
     if not phone or len(phone) != 10:
-        return jsonify({'isAdmin': False})
+        return jsonify({'isAdmin': False, 'hasDefaultPassword': True})
     user = employees_collection.find_one({'phone': phone})
-    if user and user.get('role') == 'admin':
-        return jsonify({'isAdmin': True})
-    return jsonify({'isAdmin': False})
+    if user:
+        is_admin = user.get('role') == 'admin'
+        has_default = check_password_hash(user.get('password', ''), '123')
+        return jsonify({'isAdmin': is_admin, 'hasDefaultPassword': has_default})
+    return jsonify({'isAdmin': False, 'hasDefaultPassword': True})
