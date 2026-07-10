@@ -70,7 +70,7 @@ def get_formatted_relationship(relationship, gender):
     gender = gender.strip().lower() if gender else ''
     
     if relationship == 'spouse':
-        return 'Wife' if gender == 'female' else 'Husband'
+        return 'Spouse'
     elif relationship == 'child':
         return 'Daughter' if gender == 'female' else 'Son'
     return relationship.capitalize()
@@ -78,19 +78,7 @@ def get_formatted_relationship(relationship, gender):
 def get_display_age(relationship, age_str):
     if not age_str:
         return ''
-    
-    relationship = relationship.strip().lower()
-    age_str = age_str.strip().lower()
-
-    if relationship == 'spouse':
-        return re.sub(r'\s*(years?|yrs?)$', '', age_str).strip()  # remove "years", "yr", etc.
-
-    if relationship == 'child':
-        if re.match(r'^\d+\s*(years?|yrs?)$', age_str):
-            return re.sub(r'\s*(years?|yrs?)$', '', age_str).strip()
-        return age_str  # e.g., "5 months", "newborn", etc.
-
-    return age_str  # For others, return as-is
+    return age_str.strip()
 
 def generate_csv(employees):
     output = io.StringIO()
