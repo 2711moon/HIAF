@@ -89,16 +89,15 @@
           <input name="employee_id" class="form-control" id="employeeCodeInput" value="{{ employee.employee_id }}" type="text" pattern="^\d+$" title="Only digits are allowed"  required {% if readonly %}readonly{% endif %}>
           <div id="employeeCodeError" class="text-danger mt-1" style="display: none;">Only digits are allowed.</div>
         </div>
-        <div class="mb-3">
+        <div class="mb-3 position-relative">
           <label class="fw-bold">Designation</label>
-          <input name="designation" id="designationInput" class="form-control" list="designationList"
-                value="{{ employee.designation }}"
-                required {% if readonly %}readonly{% endif %}>
-          <datalist id="designationList">
-            {% for ds in designations %}
-            <option value="{{ ds }}"></option>
-            {% endfor %}
-          </datalist>
+          <div class="position-relative">
+            <input name="designation" id="designationInput" class="form-control pe-5" autocomplete="off"
+                  value="{{ employee.designation }}"
+                  required {% if readonly %}readonly{% endif %}>
+            <i class="bi bi-chevron-down" id="designationDropdownIcon" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6c757d;"></i>
+          </div>
+          <ul class="dropdown-menu w-100" id="designationDropdown" style="max-height: 200px; overflow-y: auto; margin-top: 0;"></ul>
         </div>
         <div class="mb-3">
           <label class="fw-bold">Department</label>
@@ -322,6 +321,7 @@ const CHILD_FIELDS = ["child_name_", "child_dob_", "child_gender_"];
 const MIN_DATE = new Date('1935-01-01');
 const isReadonly = {{ 'true' if readonly else 'false' }};
 const hasDefaultPassword = {{ 'true' if has_default_password else 'false' }};
+const allDesignations = {{ designations|tojson|safe }};
 const blurredFields = new Set();
 
 function getVisibleField(field) {
@@ -1319,6 +1319,65 @@ document.addEventListener("DOMContentLoaded", function() {
         formSubmitted = true;
         formDirty = false;
         form.submit();
+      });
+    }
+  }
+
+  // Custom Autocomplete for Designation
+  const designationInput = document.getElementById('designationInput');
+  const designationDropdown = document.getElementById('designationDropdown');
+  const designationDropdownIcon = document.getElementById('designationDropdownIcon');
+
+  if (designationInput && designationDropdown && !isReadonly) {
+    function showDesignations(val) {
+      val = val.toLowerCase();
+      designationDropdown.innerHTML = '';
+      const matches = val ? allDesignations.filter(d => d.toLowerCase().includes(val)) : allDesignations;
+      
+      if (matches.length > 0) {
+        matches.forEach(m => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.className = 'dropdown-item';
+          a.href = '#';
+          a.textContent = m;
+          a.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            designationInput.value = m;
+            designationDropdown.classList.remove('show');
+            designationInput.dispatchEvent(new Event('input', { bubbles: true }));
+            designationInput.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+          li.appendChild(a);
+          designationDropdown.appendChild(li);
+        });
+        designationDropdown.classList.add('show');
+      } else {
+        designationDropdown.classList.remove('show');
+      }
+    }
+
+    designationInput.addEventListener('input', function() {
+      showDesignations(this.value);
+    });
+
+    designationInput.addEventListener('blur', () => {
+      designationDropdown.classList.remove('show');
+    });
+    
+    designationInput.addEventListener('focus', () => {
+      showDesignations(designationInput.value);
+    });
+
+    if (designationDropdownIcon) {
+      designationDropdownIcon.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (designationDropdown.classList.contains('show')) {
+          designationDropdown.classList.remove('show');
+        } else {
+          designationInput.focus();
+          showDesignations(designationInput.value);
+        }
       });
     }
   }
