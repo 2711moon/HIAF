@@ -99,14 +99,7 @@
           </div>
           <ul class="dropdown-menu w-100" id="designationDropdown" style="max-height: 200px; overflow-y: auto; margin-top: 0;"></ul>
         </div>
-        <div class="mb-3">
-          <label class="fw-bold">Department</label>
-          <input name="department" id="departmentInput" class="form-control"
-                 pattern="^[A-Za-z\s]+$"
-                  title="Only letters and spaces are allowed"
-                  value="{{ employee.department }}"
-                  required {% if readonly %}readonly{% endif %}>
-        </div>
+
         <div class="mb-3">
           <label class="fw-bold">Personal Email Address</label>
           <input name="email" type="email" class="form-control" value="{{ employee.email }}" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Please enter a valid email address (e.g. user@example.com)" required {% if readonly %}readonly{% endif %}>
@@ -247,74 +240,7 @@
   </div>
 </div>
 
-<!-- Password Prompt Modal -->
-<div class="modal fade" id="passwordPromptModal" tabindex="-1" aria-labelledby="passwordPromptModalLabel" aria-hidden="true" data-bs-backdrop="static">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="passwordPromptModalLabel">Change Default Password</h5>
-      </div>
-      <div class="modal-body">
-        The current password is 123. Do you want to change or keep as it is?
-      </div>
-      <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-secondary" id="btnKeepPassword">Keep as it is</button>
-        <button type="button" class="btn btn-primary" id="btnChangePassword">Change Password</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true" data-bs-backdrop="static">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form id="changePasswordForm">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="modal-body">
-          <div id="changePasswordError" class="alert alert-danger" style="display:none;"></div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Current Password</label>
-            <input type="password" name="current_password" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">New Password</label>
-            <input type="password" name="new_password" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-bold">Confirm New Password</label>
-            <input type="password" name="confirm_password" class="form-control" required>
-          </div>
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save and Continue</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Success Modal -->
-<div class="modal fade" id="passwordSuccessModal" tabindex="-1" aria-labelledby="passwordSuccessModalLabel" aria-hidden="true" data-bs-backdrop="static">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title text-success" id="passwordSuccessModalLabel">Success</h5>
-      </div>
-      <div class="modal-body">
-        Password changed successfully! You can now submit your profile.
-      </div>
-      <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-primary" id="btnSubmitProfileFinal">Submit Profile</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
 const CHILD_FIELDS = ["child_name_", "child_dob_", "child_gender_"];
@@ -580,32 +506,11 @@ function validateFormState(showErrors = false) {
       setFieldValidity(designationInput, "Designation is required.", false, showInvalidStyle);
       if (showErrors) errorMessages.push("Designation is required.");
       formIsValid = false;
-    } else if (!/^[A-Za-z\s]+$/.test(val)) {
-      setFieldValidity(designationInput, "Only letters and spaces allowed for Designation.", false, true);
-      errorMessages.push("Only letters and spaces allowed for Designation.");
-      formIsValid = false;
     } else {
       setFieldValidity(designationInput, "", true, false);
     }
   }
 
-  // 5. Department
-  const departmentInput = document.getElementById("departmentInput");
-  if (departmentInput) {
-    const val = departmentInput.value.trim();
-    const showInvalidStyle = showErrors || blurredFields.has(departmentInput);
-    if (!val) {
-      setFieldValidity(departmentInput, "Department is required.", false, showInvalidStyle);
-      if (showErrors) errorMessages.push("Department is required.");
-      formIsValid = false;
-    } else if (!/^[A-Za-z\s]+$/.test(val)) {
-      setFieldValidity(departmentInput, "Only letters and spaces allowed for Department.", false, true);
-      errorMessages.push("Only letters and spaces allowed for Department.");
-      formIsValid = false;
-    } else {
-      setFieldValidity(departmentInput, "", true, false);
-    }
-  }
 
   // 6. Email
   const emailInput = document.querySelector("input[name='email']");
@@ -1184,8 +1089,8 @@ document.addEventListener("DOMContentLoaded", function() {
           const data = await response.json();
           
           if (data.exists) {
-            setFieldValidity(empCodeInput, "Employee ID already exists.", false, true);
-            alert("Employee ID already exists. Please choose a different Employee Code.");
+            setFieldValidity(empCodeInput, "an employee with this id already exists, check it once again, if the issue persists contact HR", false, true);
+            alert("an employee with this id already exists, check it once again, if the issue persists contact HR");
             form.reportValidity();
             return;
           } else {
@@ -1196,14 +1101,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       }
 
-      if (hasDefaultPassword && !isReadonly) {
-        const promptModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('passwordPromptModal'));
-        promptModal.show();
-      } else {
-        formSubmitted = true;
-        formDirty = false;
-        form.submit();
-      }
+      formSubmitted = true;
+      formDirty = false;
+      form.submit();
     });
   }
 
@@ -1259,69 +1159,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   validateFormState(false);
 
-  // Modals logic
-  const passwordPromptModalEl = document.getElementById('passwordPromptModal');
-  const changePasswordModalEl = document.getElementById('changePasswordModal');
-  const passwordSuccessModalEl = document.getElementById('passwordSuccessModal');
-  
-  if (passwordPromptModalEl) {
-    const promptModal = bootstrap.Modal.getOrCreateInstance(passwordPromptModalEl);
-    let changePasswordModal;
-    let successModal;
-    if (changePasswordModalEl) changePasswordModal = bootstrap.Modal.getOrCreateInstance(changePasswordModalEl);
-    if (passwordSuccessModalEl) successModal = bootstrap.Modal.getOrCreateInstance(passwordSuccessModalEl);
 
-    document.getElementById('btnKeepPassword').addEventListener('click', () => {
-      promptModal.hide();
-      formSubmitted = true;
-      formDirty = false;
-      form.submit();
-    });
-
-    document.getElementById('btnChangePassword').addEventListener('click', () => {
-      promptModal.hide();
-      if (changePasswordModal) changePasswordModal.show();
-    });
-
-    const changePasswordForm = document.getElementById('changePasswordForm');
-    if (changePasswordForm) {
-      changePasswordForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const cpForm = e.target;
-        const formData = new FormData(cpForm);
-        const errorDiv = document.getElementById('changePasswordError');
-        errorDiv.style.display = 'none';
-
-        try {
-          const response = await fetch('/api/change_password', {
-            method: 'POST',
-            body: formData
-          });
-          const data = await response.json();
-          if (data.success) {
-            changePasswordModal.hide();
-            if (successModal) successModal.show();
-          } else {
-            errorDiv.textContent = data.message || "An error occurred.";
-            errorDiv.style.display = 'block';
-          }
-        } catch (err) {
-          errorDiv.textContent = "Network error. Please try again.";
-          errorDiv.style.display = 'block';
-        }
-      });
-    }
-
-    const btnSubmitProfileFinal = document.getElementById('btnSubmitProfileFinal');
-    if (btnSubmitProfileFinal) {
-      btnSubmitProfileFinal.addEventListener('click', () => {
-        if (successModal) successModal.hide();
-        formSubmitted = true;
-        formDirty = false;
-        form.submit();
-      });
-    }
-  }
 
   // Custom Autocomplete for Designation
   const designationInput = document.getElementById('designationInput');

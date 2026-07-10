@@ -79,7 +79,7 @@ def complete_profile(employee_id=None):
             return redirect(request.url)
         conflict = employees_collection.find_one({'employee_id': emp_id_form, '_id': {'$ne': employee['_id']}})
         if conflict:
-            flash("Employee ID already exists.", "danger")
+            flash("an employee with this id already exists, check it once again, if the issue persists contact HR", "danger")
             return redirect(request.url)
         form_data['employee_id'] = emp_id_form
 
