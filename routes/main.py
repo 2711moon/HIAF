@@ -4,6 +4,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import employees_collection
 from datetime import date
 from utils import calc_age, normalize_family, _get_employee_by_session_id
+import json
+import os
+
+try:
+    with open('designations.json', 'r', encoding='utf-8') as f:
+        DESIGNATIONS = json.load(f)
+except Exception:
+    DESIGNATIONS = []
 
 main_bp = Blueprint('main', __name__)
 
@@ -213,7 +221,8 @@ def complete_profile(employee_id=None):
         show_logout=show_logout,
         show_admin_actions=show_admin_actions,
         has_default_password=has_default_password,
-        current_date=date.today().isoformat()
+        current_date=date.today().isoformat(),
+        designations=DESIGNATIONS
     )
 
 @main_bp.route('/employee_detail')

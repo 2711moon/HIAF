@@ -91,11 +91,15 @@
         </div>
         <div class="mb-3">
           <label class="fw-bold">Designation</label>
-          <input name="designation" id="designationInput" class="form-control"
-                pattern="^[A-Za-z\s]+$"
-                title="Only letters and spaces are allowed"
+          <input name="designation" id="designationInput" class="form-control" list="designationList"
                 value="{{ employee.designation }}"
-                required {% if readonly %}readonly{% endif %}>        </div>
+                required {% if readonly %}readonly{% endif %}>
+          <datalist id="designationList">
+            {% for ds in designations %}
+            <option value="{{ ds }}"></option>
+            {% endfor %}
+          </datalist>
+        </div>
         <div class="mb-3">
           <label class="fw-bold">Department</label>
           <input name="department" id="departmentInput" class="form-control"
