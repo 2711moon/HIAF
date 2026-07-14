@@ -78,8 +78,8 @@
         <!-- BASIC INFO (Always required) -->
         <div class="mb-3">
           <label class="fw-bold">Employee ID</label>
-          <input name="employee_id" class="form-control" id="employeeCodeInput" value="{{ employee.employee_id }}" type="text" pattern="^[A-Za-z0-9]+$" maxlength="10" title="Alphanumeric characters only" required readonly>
-          <div id="employeeCodeError" class="text-danger mt-1" style="display: none;">Alphanumeric characters only.</div>
+          <input name="employee_id" class="form-control" id="employeeCodeInput" value="{{ employee.employee_id }}" type="text" maxlength="10" required readonly>
+          <div id="employeeCodeError" class="text-danger mt-1" style="display: none;">Employee ID cannot be empty.</div>
         </div>
         <div class="mb-3">
           <label class="fw-bold">Phone</label>
@@ -515,11 +515,6 @@ function validateFormState(showErrors = false) {
     if (!val) {
       setFieldValidity(empCodeInput, "Employee ID is required.", false, showInvalidStyle);
       if (showErrors) errorMessages.push("Employee ID is required.");
-      formIsValid = false;
-    } else if (!/^[A-Za-z0-9]+$/.test(val)) {
-      setFieldValidity(empCodeInput, "Alphanumeric characters only for Employee ID.", false, true);
-      if (empCodeError) empCodeError.style.display = "block";
-      errorMessages.push("Alphanumeric characters only for Employee ID.");
       formIsValid = false;
     } else {
       setFieldValidity(empCodeInput, "", true, false);

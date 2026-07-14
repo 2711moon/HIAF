@@ -287,8 +287,7 @@
           <div class="mb-3">
             <label class="form-label">Employee ID</label>
             <input type="text" name="employee_id" class="form-control"
-                  pattern="^[A-Za-z0-9]+$" maxlength="10"
-                  title="Alphanumeric characters only"
+                  maxlength="10"
                   required>
           </div>
           <div class="mb-3">
@@ -314,8 +313,8 @@
           
           <div class="mb-3">
             <label class="form-label">Employee ID</label>
-            <input type="text" name="identifier" id="loginIdentifier" class="form-control" required maxlength="10" pattern="^[A-Za-z0-9]+$" title="Alphanumeric characters only">
-            <div id="loginPhoneError" class="text-danger mt-1" style="display: none;">Employee ID must be alphanumeric.</div>
+            <input type="text" name="identifier" id="loginIdentifier" class="form-control" required maxlength="10">
+            <div id="loginPhoneError" class="text-danger mt-1" style="display: none;">Employee ID cannot be empty.</div>
           </div>
 
           <div class="mb-3">
@@ -371,7 +370,7 @@
     const errorMsg = document.getElementById('loginPhoneError');
     const identifier = idInput.value.trim();
 
-    if (!/^[A-Za-z0-9]+$/.test(identifier)) {
+    if (!identifier) {
       errorMsg.style.display = 'block';
       idInput.classList.add('is-invalid');
       return false;
