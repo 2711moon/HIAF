@@ -110,6 +110,10 @@ def complete_profile(employee_id=None):
         if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', email):
             flash("Invalid email format.", "danger")
             return redirect(request.url)
+        domain = email.split('@')[1].lower() if '@' in email else ''
+        if 'kisna' in domain or 'hk' in domain:
+            flash("Personal email cannot contain 'kisna' or 'hk' in the domain.", "danger")
+            return redirect(request.url)
 
         family_phones = set()
         family_names = set()
@@ -182,14 +186,27 @@ def complete_profile(employee_id=None):
             name = request.form.get(f'parent_name_{i}', '').strip()
             dob = request.form.get(f'parent_dob_{i}', '')
             age = request.form.get(f'parent_age_{i}', '') or (calc_age(dob) if dob else '')
-            if rel in seen_parent_rels:
-                flash(f"Duplicate parent relationship '{rel}' is not allowed.", "danger")
-                return redirect(request.url)
-            if name.lower() in family_names:
-                flash(f"Duplicate parent name '{name}' is not allowed.", "danger")
-                return redirect(request.url)
-            seen_parent_rels.add(rel)
-            family_names.add(name.lower())
+            if not name and not dob:
+                continue
+            
+            if dob:
+                if emp_dob and dob > emp_dob:
+                    flash(f"Parent {name} cannot be younger than the employee.", "danger")
+                    return redirect(request.url)
+                elif not emp_dob and _get_numeric_age(dob) < 18:
+                    flash(f"Parent {name} must be at least 18 years old.", "danger")
+                    return redirect(request.url)
+                
+            if name:
+                if rel in seen_parent_rels:
+                    flash(f"Duplicate parent relationship '{rel}' is not allowed.", "danger")
+                    return redirect(request.url)
+                if name.lower() in family_names:
+                    flash(f"Duplicate parent name '{name}' is not allowed.", "danger")
+                    return redirect(request.url)
+                seen_parent_rels.add(rel)
+                family_names.add(name.lower())
+                
             form_data['family_members'].append({
                 'relationship': rel,
                 'name': name,
@@ -334,7 +351,7 @@ def save_draft():
         dob = request.form.get(f'parent_dob_{i}', '')
         age = request.form.get(f'parent_age_{i}', '') or (calc_age(dob) if dob else '')
         
-        if rel or name:
+        if name or dob:
             form_data['family_members'].append({
                 'relationship': rel,
                 'name': name,

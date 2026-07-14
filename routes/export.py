@@ -73,7 +73,19 @@ def get_formatted_relationship(relationship, gender):
         return 'Spouse'
     elif relationship == 'child':
         return 'Daughter' if gender == 'female' else 'Son'
-    return relationship.capitalize()
+    elif relationship in ['parent - mother', 'mother']:
+        return 'Mother'
+    elif relationship in ['parent - father', 'father']:
+        return 'Father'
+    return relationship.title()
+
+def get_formatted_gender(relationship, gender):
+    relationship = relationship.strip().lower()
+    if relationship in ['parent - mother', 'mother']:
+        return 'Female'
+    elif relationship in ['parent - father', 'father']:
+        return 'Male'
+    return gender.capitalize() if gender else ''
 
 def get_display_age(relationship, age_str):
     if not age_str:
@@ -116,7 +128,7 @@ def generate_csv(employees):
                     format_date_ddmmyyyy(member.get('date_of_birth', '')),
                     get_display_age(member.get('relationship', ''), member.get('age', '')),
                     get_formatted_relationship(member.get('relationship', ''), member.get('gender', '')),
-                    member.get('gender', ''), '', '', '', '', '', '', '', ''
+                    get_formatted_gender(member.get('relationship', ''), member.get('gender', '')), '', '', '', '', '', '', '', ''
                 ])
         writer.writerow([''] * 15)
         writer.writerow([''] * 15)
@@ -190,7 +202,7 @@ def generate_excel(employees):
                     format_date_ddmmyyyy(member.get('date_of_birth', '')),
                     get_display_age(member.get('relationship', ''), member.get('age', '')),
                     get_formatted_relationship(member.get('relationship', ''), member.get('gender', '')),
-                    member.get('gender', ''), '', '', '', '', '', '', '', ''
+                    get_formatted_gender(member.get('relationship', ''), member.get('gender', '')), '', '', '', '', '', '', '', ''
                 ])
                 ws[f'C{row}'].alignment = Alignment(indent=1)
                 for col in range(1, 16):

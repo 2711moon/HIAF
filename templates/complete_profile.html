@@ -77,17 +77,17 @@
 
         <!-- BASIC INFO (Always required) -->
         <div class="mb-3">
-          <label class="fw-bold">Name</label>
-          <input name="name" class="form-control" value="{{ employee.name }}" pattern="^[A-Za-z\s]+$" title="Only letters and spaces are allowed" {% if not is_admin %}readonly{% endif %} required>
+          <label class="fw-bold">Employee ID</label>
+          <input name="employee_id" class="form-control" id="employeeCodeInput" value="{{ employee.employee_id }}" type="text" pattern="^[A-Za-z0-9]+$" maxlength="10" title="Alphanumeric characters only" required readonly>
+          <div id="employeeCodeError" class="text-danger mt-1" style="display: none;">Alphanumeric characters only.</div>
         </div>
         <div class="mb-3">
           <label class="fw-bold">Phone</label>
           <input name="phone" class="form-control" pattern="\d{10}" maxlength="10" title="Enter exactly 10 digits" value="{{ employee.phone }}" {% if not is_admin %}readonly{% endif %} required>
         </div>
         <div class="mb-3">
-          <label class="fw-bold">Employee ID</label>
-          <input name="employee_id" class="form-control" id="employeeCodeInput" value="{{ employee.employee_id }}" type="text" pattern="^\d+$" title="Only digits are allowed"  required {% if readonly %}readonly{% endif %}>
-          <div id="employeeCodeError" class="text-danger mt-1" style="display: none;">Only digits are allowed.</div>
+          <label class="fw-bold">Full Name <span class="text-danger small">(as per AADHAAR)</span></label>
+          <input name="name" class="form-control" value="{{ employee.name }}" pattern="^[A-Za-z\s]+$" title="Only letters and spaces are allowed" {% if readonly %}readonly{% endif %} required>
         </div>
         <div class="mb-3 position-relative">
           <label class="fw-bold">Designation</label>
@@ -125,6 +125,57 @@
             <option value="Female" {% if employee.gender=='Female' %}selected{% endif %}>Female</option>
           </select>
         </div>
+        
+        {% set mother = namespace(name='', dob='') %}
+        {% set father = namespace(name='', dob='') %}
+        {% for p in employee.parents %}
+          {% if p.relationship == 'Parent - Mother' or p.relationship == 'Mother' %}
+            {% set mother.name = p.name %}
+            {% set mother.dob = p.date_of_birth %}
+          {% elif p.relationship == 'Parent - Father' or p.relationship == 'Father' %}
+            {% set father.name = p.name %}
+            {% set father.dob = p.date_of_birth %}
+          {% endif %}
+        {% endfor %}
+
+        <div class="card mb-3">
+          <div class="card-header fw-bold">Parent - Mother</div>
+          <div class="card-body pb-2">
+            <input type="hidden" name="parent_relationship_0" value="Parent - Mother">
+            <div class="mb-3">
+              <label class="form-label text-muted small mb-1">Mother's Name</label>
+              <input name="parent_name_0" class="form-control" value="{{ mother.name }}" placeholder="Enter Mother's name" pattern="^[A-Za-z\s]*$" title="Only letters and spaces are allowed" {% if readonly %}readonly{% endif %}>
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-muted small mb-1">Date of Birth</label>
+              <div class="input-group">
+                <input name="parent_dob_0" id="parent_dob_0" type="date" class="form-control" value="{{ mother.dob }}" {% if readonly %}readonly{% endif %}>
+                <button type="button" class="btn btn-outline-secondary" onclick="const p = document.getElementById('parent_dob_0'); if(p._flatpickr) p._flatpickr.clear(); p.dispatchEvent(new Event('change'));" {% if readonly %}disabled{% endif %}>&times;</button>
+              </div>
+              <div class="text-danger small mt-1" id="parent-dob-error-0" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header fw-bold">Parent - Father</div>
+          <div class="card-body pb-2">
+            <input type="hidden" name="parent_relationship_1" value="Parent - Father">
+            <div class="mb-3">
+              <label class="form-label text-muted small mb-1">Father's Name</label>
+              <input name="parent_name_1" class="form-control" value="{{ father.name }}" placeholder="Enter Father's name" pattern="^[A-Za-z\s]*$" title="Only letters and spaces are allowed" {% if readonly %}readonly{% endif %}>
+            </div>
+            <div class="mb-3">
+              <label class="form-label text-muted small mb-1">Date of Birth</label>
+              <div class="input-group">
+                <input name="parent_dob_1" id="parent_dob_1" type="date" class="form-control" value="{{ father.dob }}" {% if readonly %}readonly{% endif %}>
+                <button type="button" class="btn btn-outline-secondary" onclick="const p = document.getElementById('parent_dob_1'); if(p._flatpickr) p._flatpickr.clear(); p.dispatchEvent(new Event('change'));" {% if readonly %}disabled{% endif %}>&times;</button>
+              </div>
+              <div class="text-danger small mt-1" id="parent-dob-error-1" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+        <input type="hidden" name="total_parents" value="2">
         <div class="mb-3">
           <label class="fw-bold">Marital Status</label>
           <select name="marital_status" id="marital_status" class="form-control" onchange="toggleFamilyFields()" required {% if readonly %}disabled{% endif %}>
@@ -198,28 +249,7 @@
         </div>
 
 
-        <!-- PARENTS SECTION (always shown) -->
-        <div id="parentSection" style="display:block; margin-top:1rem;">
-         <!--<h5>Parent Details</h5> --> 
-          <div id="parentList">
-            {% for parent in employee.parents %}
-            <div class="position-relative mb-3">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <label class="fw-bold mb-0">{{ parent.relationship }}</label>
-                {% if is_admin %}
-                <button type="button" class="remove-btn" onclick="removeParent(this, '{{ parent.relationship }}')" disabled>🗑️</button>
-                {% endif %}
-              </div>
-              <input type="hidden" name="parent_relationship_{{ loop.index0 }}" value="{{ parent.relationship }}">
-              <input name="parent_name_{{ loop.index0 }}" class="form-control mb-2" value="{{ parent.name }}" placeholder="Name" readonly>
-              <input name="parent_dob_{{ loop.index0 }}" type="date" class="form-control mb-2" value="{{ parent.date_of_birth }}" readonly>
-              <input name="parent_age_{{ loop.index0 }}" class="form-control" value="{{ parent.age }}" placeholder="Age" readonly>
-            </div>
-            {% endfor %}
-          </div>
-          <input type="hidden" name="total_parents" id="total_parents" value="{{ employee.parents|length }}">
-          <button type="button" id="addParentBtn" class="btn btn-secondary btn-sm" style="pointer-events: none; opacity: 0.6; cursor: not-allowed; display:none;">Add Parent</button>
-        </div>
+        <!-- PARENTS SECTION MOVED -->
 
         <!-- SUBMIT BUTTON -->
         {% if show_submit %}
@@ -483,13 +513,13 @@ function validateFormState(showErrors = false) {
     const val = empCodeInput.value.trim();
     const showInvalidStyle = showErrors || blurredFields.has(empCodeInput);
     if (!val) {
-      setFieldValidity(empCodeInput, "Employee Code is required.", false, showInvalidStyle);
-      if (showErrors) errorMessages.push("Employee Code is required.");
+      setFieldValidity(empCodeInput, "Employee ID is required.", false, showInvalidStyle);
+      if (showErrors) errorMessages.push("Employee ID is required.");
       formIsValid = false;
-    } else if (!/^\d+$/.test(val)) {
-      setFieldValidity(empCodeInput, "Only digits are allowed for Employee Code.", false, true);
+    } else if (!/^[A-Za-z0-9]+$/.test(val)) {
+      setFieldValidity(empCodeInput, "Alphanumeric characters only for Employee ID.", false, true);
       if (empCodeError) empCodeError.style.display = "block";
-      errorMessages.push("Only digits are allowed for Employee Code.");
+      errorMessages.push("Alphanumeric characters only for Employee ID.");
       formIsValid = false;
     } else {
       setFieldValidity(empCodeInput, "", true, false);
@@ -524,6 +554,10 @@ function validateFormState(showErrors = false) {
     } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val)) {
       setFieldValidity(emailInput, "Please enter a valid email address (e.g. user@example.com).", false, true);
       errorMessages.push("Please enter a valid email address (e.g. user@example.com).");
+      formIsValid = false;
+    } else if (val.split('@')[1].toLowerCase().includes('kisna') || val.split('@')[1].toLowerCase().includes('hk')) {
+      setFieldValidity(emailInput, "Personal email cannot contain 'kisna' or 'hk' in the domain.", false, true);
+      errorMessages.push("Personal email cannot contain 'kisna' or 'hk' in the domain.");
       formIsValid = false;
     } else {
       setFieldValidity(emailInput, "", true, false);
@@ -766,18 +800,60 @@ function validateFormState(showErrors = false) {
     clearChildrenList();
   }
 
-  // 10. Parent validation (duplicate names check)
-  const parentNameInputs = document.querySelectorAll("#parentList input[name^='parent_name_']");
-  parentNameInputs.forEach(input => {
-    const val = input.value.trim();
-    if (val) {
-      if (names.includes(val.toLowerCase())) {
+  // 10. Parent validation (duplicate names check & age)
+  const parentNameInputs = document.querySelectorAll("input[name^='parent_name_']");
+  const parentDobInputs = document.querySelectorAll("input[name^='parent_dob_']");
+  
+  parentNameInputs.forEach((input, index) => {
+    const nameVal = input.value.trim();
+    const dobInput = parentDobInputs[index];
+    
+    if (nameVal) {
+      if (names.includes(nameVal.toLowerCase())) {
         setFieldValidity(input, `Duplicate name "${input.value}" is not allowed.`, false, true);
         errorMessages.push(`Duplicate parent/family name "${input.value}" is not allowed.`);
         formIsValid = false;
       } else {
         setFieldValidity(input, "", true, false);
-        names.push(val.toLowerCase());
+        names.push(nameVal.toLowerCase());
+      }
+    }
+    
+    if (dobInput) {
+      const dobVal = dobInput.value.trim();
+      const errDiv = document.getElementById(`parent-dob-error-${index}`);
+      if (dobVal) {
+        const empDobInput = document.getElementById("emp_dob");
+        if (empDobInput && empDobInput.value) {
+            if (dobVal > empDobInput.value) {
+                setFieldValidity(dobInput, "Parent cannot be younger than the employee.", false, true);
+                if (errDiv) {
+                    errDiv.textContent = `Parent cannot be born after the employee.`;
+                    errDiv.style.display = "block";
+                }
+                errorMessages.push("Parent cannot be younger than the employee.");
+                formIsValid = false;
+            } else {
+                setFieldValidity(dobInput, "", true, false);
+                if (errDiv) errDiv.style.display = "none";
+            }
+        } else {
+            const numericAge = getNumericAge(dobVal);
+            if (numericAge < 18) {
+                setFieldValidity(dobInput, "Parent must be at least 18 years old.", false, true);
+                if (errDiv) {
+                    errDiv.textContent = `Parent must be at least 18 years old.`;
+                    errDiv.style.display = "block";
+                }
+                errorMessages.push("Parent must be at least 18 years old.");
+                formIsValid = false;
+            } else {
+                setFieldValidity(dobInput, "", true, false);
+                if (errDiv) errDiv.style.display = "none";
+            }
+        }
+      } else {
+          if (errDiv) errDiv.style.display = "none";
       }
     }
   });
@@ -967,7 +1043,16 @@ document.addEventListener("DOMContentLoaded", function() {
       altInput: true,
       altFormat: "d-m-Y",
       dateFormat: "Y-m-d",
-      clickOpens: false
+      maxDate: "today",
+      clickOpens: !isReadonly,
+      onChange: function() {
+        blurredFields.add(input);
+        validateFormState();
+      },
+      onClose: function() {
+        blurredFields.add(input);
+        validateFormState();
+      }
     });
   });
 

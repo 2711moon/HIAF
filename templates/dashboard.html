@@ -285,13 +285,10 @@
           {{ form.csrf_token }}
 
           <div class="mb-3">
-            <label class="form-label">Emp full name
-              <span class="text-danger aadhaar-blink">(as per AADHAAR)
-              </span>
-            </label>
-            <input type="text" name="name" class="form-control"
-                  pattern="^[A-Za-z\s]+$"
-                  title="Only letters and spaces are allowed"
+            <label class="form-label">Employee ID</label>
+            <input type="text" name="employee_id" class="form-control"
+                  pattern="^[A-Za-z0-9]+$" maxlength="10"
+                  title="Alphanumeric characters only"
                   required>
           </div>
           <div class="mb-3">
@@ -316,9 +313,9 @@
           {{ form.csrf_token }}
           
           <div class="mb-3">
-            <label class="form-label">Mobile no.</label>
-            <input type="text" name="identifier" id="loginIdentifier" class="form-control" required maxlength="10" pattern="\d{10}">
-            <div id="loginPhoneError" class="text-danger mt-1" style="display: none;">If using phone, it must be exactly 10 digits.</div>
+            <label class="form-label">Employee ID</label>
+            <input type="text" name="identifier" id="loginIdentifier" class="form-control" required maxlength="10" pattern="^[A-Za-z0-9]+$" title="Alphanumeric characters only">
+            <div id="loginPhoneError" class="text-danger mt-1" style="display: none;">Employee ID must be alphanumeric.</div>
           </div>
 
           <div class="mb-3">
@@ -374,14 +371,7 @@
     const errorMsg = document.getElementById('loginPhoneError');
     const identifier = idInput.value.trim();
 
-    // If identifier is all digits and length is not 10, show error
-    if (/^\d+$/.test(identifier) && identifier.length !== 10) {
-      errorMsg.style.display = 'block';
-      idInput.classList.add('is-invalid');
-      return false;
-    }
-    // If identifier is all digits and length > 10, show error
-    if (/^\d+$/.test(identifier) && identifier.length > 10) {
+    if (!/^[A-Za-z0-9]+$/.test(identifier)) {
       errorMsg.style.display = 'block';
       idInput.classList.add('is-invalid');
       return false;
@@ -425,14 +415,14 @@
 
   if (loginIdentifier && passcode) {
     loginIdentifier.addEventListener('input', async function() {
-      const phone = this.value;
-      if (phone.length === 10) {
+      const identifier = this.value.trim();
+      if (identifier.length > 0) {
         try {
-          const res = await fetch(`/api/check_user_status?phone=${phone}`);
+          const res = await fetch(`/api/check_user_status?identifier=${identifier}`);
           const data = await res.json();
           if (data.isAdmin || !data.hasDefaultPassword) {
             passcode.readOnly = false;
-            passcode.value = '';
+            if (passcode.value === '123') passcode.value = '';
             loginPasswordNote.style.display = 'none';
             return;
           }
@@ -440,7 +430,7 @@
           console.error('Error checking user status', err);
         }
       }
-      // Default for non-admins or incomplete phone numbers
+      // Default for non-admins or incomplete input
       passcode.readOnly = true;
       passcode.value = '123';
       loginPasswordNote.style.display = 'block';

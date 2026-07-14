@@ -66,21 +66,24 @@ def register():
         flash('Invalid or missing CSRF token.', 'danger')
         return render_template('dashboard.html', form=form)
 
-    name = request.form.get('name')
+    employee_id = request.form.get('employee_id')
     phone = request.form.get('phone')
     password = request.form.get('password')
 
-    if not all([name, phone, password]):
+    if not all([employee_id, phone, password]):
         flash('All fields are required.', 'danger')
         return render_template('dashboard.html', form=form)
 
-    if employees_collection.find_one({'phone': phone}):
-        flash('An account with this phone already exists.', 'danger')
+    existing_user = employees_collection.find_one({
+        '$or': [{'employee_id': employee_id}, {'phone': phone}]
+    })
+    if existing_user:
+        flash('Registering again is not allowed, you can login.', 'danger')
         return render_template('dashboard.html', form=form)
 
     hashed_pw = generate_password_hash(password)
     result = employees_collection.insert_one({
-        'name': name,
+        'employee_id': employee_id,
         'phone': phone,
         'password': hashed_pw,
         'details_completed': False
@@ -102,13 +105,17 @@ def login():
     identifier = request.form.get('identifier')
     password = request.form.get('passcode')
 
-    if not identifier or not identifier.isdigit() or len(identifier) != 10:
-        flash('Mobile number must be exactly 10 digits.', 'danger')
+    if not identifier:
+        flash('Employee ID is required.', 'danger')
         return redirect(url_for('auth.dashboard', show_login=1))
 
-    user = employees_collection.find_one({'phone': identifier})
+    user = employees_collection.find_one({'employee_id': identifier})
     
-    if user and check_password_hash(user.get('password', ''), password):
+    if not user:
+        flash('This Employee ID has not been registered. Please register or check it again if you believe you have registered.', 'danger')
+        return redirect(url_for('auth.dashboard', show_login=1))
+
+    if check_password_hash(user.get('password', ''), password):
         session.permanent = True
         if user.get('role') == 'admin':
             session['role'] = 'admin'
@@ -141,10 +148,10 @@ def logout():
 
 @auth_bp.route('/api/check_user_status')
 def check_user_status():
-    phone = request.args.get('phone')
-    if not phone or len(phone) != 10:
+    identifier = request.args.get('identifier')
+    if not identifier:
         return jsonify({'isAdmin': False, 'hasDefaultPassword': True})
-    user = employees_collection.find_one({'phone': phone})
+    user = employees_collection.find_one({'employee_id': identifier})
     if user:
         is_admin = user.get('role') == 'admin'
         has_default = check_password_hash(user.get('password', ''), '123')

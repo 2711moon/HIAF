@@ -65,7 +65,7 @@ def normalize_family(emp):
                 'age': age,
                 'relationship': 'Child'
             })
-        elif rel in ['Mother', 'Father']:
+        elif rel in ['Mother', 'Father', 'Parent - Mother', 'Parent - Father']:
             parents_info.append({
                 'name': name,
                 'date_of_birth': dob,
@@ -86,6 +86,15 @@ def normalize_family(emp):
     emp['spouse'] = spouse_info
     emp['children'] = children_info
     emp['parents'] = parents_info
+
+    def get_order(member_rel):
+        r = member_rel.lower()
+        if 'parent' in r or r in ['mother', 'father']: return 1
+        if 'spouse' in r: return 2
+        if r in ['child', 'son', 'daughter']: return 3
+        return 4
+
+    family_members.sort(key=lambda m: get_order(m['relationship']))
 
     # Only replace family_members if valid entries exist
     if family_members:

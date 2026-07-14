@@ -164,7 +164,11 @@
                     </div>
                     <div class="row mt-2">
                         <div class="col-md-4"><strong>Age:</strong> {{ member.age or 'N/A' }}</div>
+                        {% if 'parent' not in member.relationship|lower %}
                         <div class="col-md-4"><strong>Gender:</strong> {{ member.gender or 'N/A' }}</div>
+                        {% else %}
+                        <div class="col-md-4"></div>
+                        {% endif %}
                         <div class="col-md-4"></div>
                     </div>
                 {% endif %}
