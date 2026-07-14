@@ -112,7 +112,7 @@
               {% endif %}
             </td>
             <td>{{ employee.employee_id or '' }}</td>
-            <td>{{ employee.name }}</td>
+            <td>{{ employee.name.title() if employee.name else '' }}</td>
             <td>{{ employee.designation }}</td>
             <td>{{ employee.phone }}</td>
             <td>{{ employee.age }}</td>

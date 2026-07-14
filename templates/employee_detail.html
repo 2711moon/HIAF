@@ -106,10 +106,10 @@
                             <div class="mb-2"><strong>Age:</strong> {{ employee.age }}</div>
                         </div>
                         <div class="col-md-4">
-                            <div class="mb-2"><strong>Name:</strong> {{ employee.name }}</div>
+                            <div class="mb-2"><strong>Name:</strong> {{ employee.name.title() if employee.name else '' }}</div>
                             <div class="mb-2"><strong>Phone:</strong> {{ employee.phone }}</div>
                             <div class="mb-2"><strong>Date of Birth:</strong> {{ employee.dob|datetime_format }}</div>
-                            <div class="mb-2"><strong>Marital Status:</strong> {{ employee.marital_status }}</div>
+                            <div class="mb-2"><strong>Marital Status:</strong> {{ employee.marital_status.title() if employee.marital_status else '' }}</div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-2"><strong>Designation:</strong> {{ employee.designation }}</div>
@@ -136,7 +136,7 @@
                     {% set spouse_relationship = "Wife" if employee.gender|lower == "male" else "Husband" if employee.gender|lower == "female" else ("Husband" if member.gender == "Male" else "Wife" if member.gender == "Female" else "Spouse") %}
                     <div class="row">
                         <div class="col-md-4"><strong>Relationship:</strong> {{ spouse_relationship }}</div>
-                        <div class="col-md-4"><strong>Name:</strong> {{ member.name }}</div>
+                        <div class="col-md-4"><strong>Name:</strong> {{ member.name.title() if member.name else '' }}</div>
                         <div class="col-md-4"><strong>Date of Birth:</strong> {{ member.date_of_birth|datetime_format if member.date_of_birth else 'N/A' }}</div>
                     </div>
                     <div class="row mt-2">
@@ -147,7 +147,7 @@
                 {% elif rel in ['son', 'daughter', 'child'] %}
                     <div class="row">
                         <div class="col-md-4"><strong>Relationship:</strong> {{ child_relationship|capitalize }}</div>
-                        <div class="col-md-4"><strong>Name:</strong> {{ member.name }}</div>
+                        <div class="col-md-4"><strong>Name:</strong> {{ member.name.title() if member.name else '' }}</div>
                         <div class="col-md-4"><strong>Date of Birth:</strong> {{ member.date_of_birth|datetime_format if member.date_of_birth else 'N/A' }}</div>
                     </div>
                     <div class="row mt-2">
@@ -159,7 +159,7 @@
                 {% else %}
                     <div class="row">
                         <div class="col-md-4"><strong>Relationship:</strong> {{ member.relationship }}</div>
-                        <div class="col-md-4"><strong>Name:</strong> {{ member.name }}</div>
+                        <div class="col-md-4"><strong>Name:</strong> {{ member.name.title() if member.name else '' }}</div>
                         <div class="col-md-4"><strong>Date of Birth:</strong> {{ member.date_of_birth|datetime_format if member.date_of_birth else 'N/A' }}</div>
                     </div>
                     <div class="row mt-2">

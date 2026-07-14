@@ -71,6 +71,8 @@ def complete_profile(employee_id=None):
 
     if request.method == 'POST':
         form_data = request.form.to_dict()
+        if 'name' in form_data and form_data['name']:
+            form_data['name'] = form_data['name'].title()
         form_data['family_members'] = []
 
         emp_id_form = form_data.get('employee_id', '').strip()
@@ -120,7 +122,7 @@ def complete_profile(employee_id=None):
 
         marital_status = form_data.get('marital_status')
         if marital_status == 'married':
-            spouse_name = form_data.pop('spouse_name', '').strip()
+            spouse_name = form_data.pop('spouse_name', '').strip().title()
             spouse_dob = form_data.pop('spouse_dob', '')
             spouse_gender = form_data.pop('spouse_gender', '')
             spouse_age = calc_age(spouse_dob) if spouse_dob else ''
@@ -149,7 +151,7 @@ def complete_profile(employee_id=None):
 
         if marital_status in ['married', 'divorced/widowed']:
             for i in range(total_children):
-                name = request.form.get(f'child_name_{i}', '').strip()
+                name = request.form.get(f'child_name_{i}', '').strip().title()
                 dob = request.form.get(f'child_dob_{i}', '')
                 phone_c = request.form.get(f'child_phone_{i}', '').strip()
                 gender = request.form.get(f'child_gender_{i}', '')
@@ -183,7 +185,7 @@ def complete_profile(employee_id=None):
         seen_parent_rels = set()
         for i in range(total_parents):
             rel = request.form.get(f'parent_relationship_{i}', '')
-            name = request.form.get(f'parent_name_{i}', '').strip()
+            name = request.form.get(f'parent_name_{i}', '').strip().title()
             dob = request.form.get(f'parent_dob_{i}', '')
             age = request.form.get(f'parent_age_{i}', '') or (calc_age(dob) if dob else '')
             if not name and not dob:

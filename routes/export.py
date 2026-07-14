@@ -107,7 +107,7 @@ def generate_csv(employees):
         writer.writerow([
             sr_no,
             emp.get('employee_id', ''),
-            emp.get('name', ''),
+            str(emp.get('name', '')).title(),
             format_date_ddmmyyyy(emp.get('dob', '')),
             emp.get('age', ''),
             'Employee',
@@ -119,12 +119,12 @@ def generate_csv(employees):
             emp.get('sum_insured_gpa', ''),
             emp.get('sum_insured_gtl', ''),
             emp.get('email', ''),
-            emp.get('marital_status', '')
+            str(emp.get('marital_status', '')).title()
         ])
         if emp.get('family_members'):
             for member in emp.get('family_members', []):
                 writer.writerow([
-                    '', '', member.get('name', ''),
+                    '', '', member.get('name', '').title(),
                     format_date_ddmmyyyy(member.get('date_of_birth', '')),
                     get_display_age(member.get('relationship', ''), member.get('age', '')),
                     get_formatted_relationship(member.get('relationship', ''), member.get('gender', '')),
@@ -175,7 +175,7 @@ def generate_excel(employees):
         ws.append([
             sr_no,
             emp.get('employee_id', ''),
-            emp.get('name', ''),
+            str(emp.get('name', '')).title(),
             format_date_ddmmyyyy(emp.get('dob', '')),
             emp.get('age', ''),
             'Employee',
@@ -187,7 +187,7 @@ def generate_excel(employees):
             emp.get('sum_insured_gpa', ''),
             emp.get('sum_insured_gtl', ''),
             emp.get('email', ''),
-            emp.get('marital_status', '')
+            str(emp.get('marital_status', '')).title()
         ])
         for col in range(1, 16):
             cell = ws.cell(row=row, column=col)
@@ -198,7 +198,7 @@ def generate_excel(employees):
         if emp.get('family_members'):
             for member in emp.get('family_members', []):
                 ws.append([
-                    '', '', member.get('name', ''),
+                    '', '', member.get('name', '').title(),
                     format_date_ddmmyyyy(member.get('date_of_birth', '')),
                     get_display_age(member.get('relationship', ''), member.get('age', '')),
                     get_formatted_relationship(member.get('relationship', ''), member.get('gender', '')),
