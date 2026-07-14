@@ -180,9 +180,9 @@
           <label class="fw-bold">Marital Status</label>
           <select name="marital_status" id="marital_status" class="form-control" onchange="toggleFamilyFields()" required {% if readonly %}disabled{% endif %}>
             <option value="">-- Select --</option>
-            <option value="unmarried" {% if employee.marital_status=='unmarried' %}selected{% endif %}>Unmarried</option>
-            <option value="married" {% if employee.marital_status=='married' %}selected{% endif %}>Married</option>
-            <option value="divorced/widowed" {% if employee.marital_status=='divorced/widowed' %}selected{% endif %}>Divorced/Widowed</option>
+            <option value="Unmarried" {% if employee.marital_status=='Unmarried' %}selected{% endif %}>Unmarried</option>
+            <option value="Married" {% if employee.marital_status=='Married' %}selected{% endif %}>Married</option>
+            <option value="Divorced/Widowed" {% if employee.marital_status=='Divorced/Widowed' %}selected{% endif %}>Divorced/Widowed</option>
           </select>
         </div>
 
